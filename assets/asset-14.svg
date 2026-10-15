@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+<!-- Bloco de tijolos de pedra cinza rachados com musgo verde -->
+<rect x="0" y="0" width="16" height="16" fill="#111"/>
+<rect x="2" y="2" width="12" height="12" fill="#616161"/>
+<!-- fileira 1 -->
+<rect x="2" y="3" width="5" height="4" fill="#9e9e9e"/>
+<rect x="8" y="3" width="5" height="4" fill="#9e9e9e"/>
+<!-- fileira 2 (desalinhada) -->
+<rect x="2" y="8" width="4" height="4" fill="#9e9e9e"/>
+<rect x="7" y="8" width="5" height="4" fill="#9e9e9e"/>
+<rect x="13" y="8" width="1" height="4" fill="#9e9e9e"/>
+<!-- fileira 3 -->
+<rect x="2" y="13" width="5" height="1" fill="#9e9e9e"/>
+<rect x="8" y="13" width="5" height="1" fill="#9e9e9e"/>
+<!-- rachaduras -->
+<rect x="9" y="4" width="1" height="1" fill="#424242"/>
+<rect x="10" y="5" width="1" height="1" fill="#424242"/>
+<rect x="8" y="6" width="1" height="1" fill="#424242"/>
+<rect x="3" y="9" width="1" height="1" fill="#424242"/>
+<rect x="4" y="10" width="1" height="1" fill="#424242"/>
+<!-- musgo -->
+<rect x="2" y="3" width="2" height="1" fill="#6b8e23"/>
+<rect x="4" y="3" width="1" height="1" fill="#558b2f"/>
+<rect x="2" y="4" width="1" height="1" fill="#558b2f"/>
+<rect x="11" y="12" width="2" height="1" fill="#6b8e23"/>
+<rect x="12" y="13" width="1" height="1" fill="#558b2f"/>
+</svg>

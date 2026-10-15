@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 24" shape-rendering="crispEdges">
+<!-- Explorador jogado para trás, expressão de dor -->
+<g fill="#111"><rect x="0" y="1" width="11" height="10"/><rect x="2" y="3" width="12" height="15"/><rect x="0" y="11" width="5" height="9"/><rect x="5" y="13" width="11" height="9"/></g>
+<!-- cabeça jogada para trás -->
+<rect x="2" y="2" width="7" height="3" fill="#7b4a2d"/>
+<rect x="2" y="4" width="7" height="1" fill="#3e2415"/>
+<rect x="1" y="5" width="9" height="2" fill="#6b3f23"/>
+<rect x="3" y="7" width="5" height="3" fill="#f2c9a0"/>
+<!-- olho apertado de dor -->
+<rect x="6" y="8" width="2" height="1" fill="#111"/>
+<!-- corpo inclinado para trás -->
+<rect x="3" y="10" width="7" height="7" fill="#4e342e"/>
+<rect x="6" y="10" width="1" height="7" fill="#2f1b12"/>
+<!-- braços desequilibrados -->
+<rect x="10" y="6" width="3" height="5" fill="#5d4037"/>
+<rect x="10" y="4" width="3" height="2" fill="#f2c9a0"/>
+<rect x="1" y="12" width="3" height="5" fill="#5d4037"/>
+<rect x="1" y="17" width="3" height="2" fill="#f2c9a0"/>
+<!-- pernas arrastadas no ar -->
+<rect x="8" y="14" width="4" height="3" fill="#37474f"/>
+<rect x="10" y="16" width="4" height="3" fill="#37474f"/>
+<rect x="12" y="17" width="4" height="3" fill="#3e2723"/>
+<rect x="6" y="16" width="4" height="3" fill="#37474f"/>
+<rect x="8" y="18" width="4" height="2" fill="#37474f"/>
+<rect x="9" y="19" width="4" height="3" fill="#3e2723"/>
+</svg>

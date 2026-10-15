@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 16" shape-rendering="crispEdges">
+<!-- Barra retangular horizontal longa, oca, de pedra escura (fundo da barra de carregamento) -->
+<rect x="0" y="0" width="48" height="16" fill="#111"/>
+<rect x="1" y="1" width="46" height="14" fill="#37474f"/>
+<!-- textura de pedra -->
+<g fill="#2c3a45">
+<rect x="4" y="3" width="3" height="2"/><rect x="12" y="9" width="4" height="2"/>
+<rect x="20" y="4" width="3" height="2"/><rect x="30" y="8" width="4" height="2"/>
+<rect x="40" y="3" width="3" height="2"/>
+</g>
+<!-- interior oco escuro -->
+<rect x="3" y="4" width="42" height="8" fill="#1a2229"/>
+<rect x="3" y="4" width="42" height="1" fill="#0f151b"/>
+</svg>

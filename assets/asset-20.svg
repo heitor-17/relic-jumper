@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 32" shape-rendering="crispEdges">
+<!-- Fundo: montanhas rochosas à noite sob lua cheia -->
+<rect x="0" y="0" width="64" height="12" fill="#101c3f"/>
+<rect x="0" y="12" width="64" height="8" fill="#16255c"/>
+<rect x="0" y="20" width="64" height="8" fill="#1d2f6b"/>
+<!-- estrelas -->
+<g fill="#fff"><rect x="8" y="3" width="1" height="1"/><rect x="20" y="6" width="1" height="1"/><rect x="35" y="2" width="1" height="1"/><rect x="44" y="9" width="1" height="1"/></g>
+<rect x="14" y="9" width="1" height="1" fill="#ffd54f"/>
+<rect x="30" y="7" width="1" height="1" fill="#ffd54f"/>
+<!-- lua cheia -->
+<rect x="48" y="4" width="6" height="6" fill="#fff9c4"/>
+<rect x="49" y="5" width="1" height="1" fill="#ffe082"/>
+<rect x="52" y="7" width="2" height="1" fill="#ffe082"/>
+<!-- montanhas distantes (roxo) -->
+<g fill="#3d3a7a">
+<rect x="7" y="14" width="2" height="1"/><rect x="5" y="16" width="6" height="2"/><rect x="3" y="18" width="10" height="2"/><rect x="1" y="20" width="14" height="7"/>
+<rect x="23" y="12" width="2" height="2"/><rect x="21" y="14" width="6" height="2"/><rect x="19" y="16" width="10" height="2"/><rect x="17" y="18" width="14" height="9"/>
+<rect x="39" y="15" width="2" height="2"/><rect x="37" y="17" width="6" height="2"/><rect x="35" y="19" width="10" height="8"/>
+<rect x="55" y="13" width="2" height="2"/><rect x="53" y="15" width="6" height="2"/><rect x="51" y="17" width="10" height="2"/><rect x="49" y="19" width="14" height="8"/>
+<rect x="0" y="22" width="64" height="5"/>
+</g>
+<!-- montanhas próximas (azul escuro) -->
+<g fill="#232d5c">
+<rect x="15" y="18" width="2" height="2"/><rect x="12" y="20" width="8" height="2"/><rect x="9" y="22" width="14" height="7"/>
+<rect x="43" y="17" width="2" height="2"/><rect x="40" y="19" width="8" height="2"/><rect x="37" y="21" width="14" height="8"/>
+<rect x="0" y="24" width="64" height="5"/>
+</g>
+<!-- chão -->
+<rect x="0" y="29" width="64" height="3" fill="#0e1430"/>
+<rect x="0" y="28" width="64" height="1" fill="#1a2352"/>
+</svg>

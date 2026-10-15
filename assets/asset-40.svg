@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 8" shape-rendering="crispEdges">
+<!-- Bloco sólido laranja incandescente para dentro da barra de carregamento -->
+<rect x="0" y="0" width="16" height="8" fill="#111"/>
+<rect x="1" y="1" width="14" height="6" fill="#ff5722"/>
+<!-- núcleo incandescente -->
+<rect x="1" y="3" width="14" height="2" fill="#ffcdd2"/>
+<rect x="1" y="2" width="14" height="1" fill="#ff8a65"/>
+<rect x="1" y="5" width="14" height="1" fill="#e64a19"/>
+<!-- brilho -->
+<rect x="3" y="3" width="2" height="2" fill="#fff3e0"/>
+</svg>

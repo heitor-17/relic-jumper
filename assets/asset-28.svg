@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+<!-- Chave de prata grande com caveira no cabo -->
+<rect x="1" y="4" width="14" height="8" fill="#111"/>
+<!-- caveira no cabo -->
+<rect x="2" y="5" width="5" height="4" fill="#eceff1"/>
+<rect x="3" y="9" width="3" height="1" fill="#eceff1"/>
+<rect x="3" y="6" width="1" height="1" fill="#111"/>
+<rect x="5" y="6" width="1" height="1" fill="#111"/>
+<!-- haste -->
+<rect x="7" y="7" width="6" height="2" fill="#cfd8dc"/>
+<rect x="7" y="7" width="6" height="1" fill="#f5f7fa"/>
+<!-- dentes da chave -->
+<rect x="10" y="9" width="1" height="2" fill="#cfd8dc"/>
+<rect x="12" y="9" width="1" height="2" fill="#cfd8dc"/>
+</svg>

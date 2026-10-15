@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+<!-- Morcego roxo de olhos vermelhos, asas esticadas para cima -->
+<rect x="0" y="0" width="16" height="14" fill="#111"/>
+<!-- asas para cima -->
+<g fill="#7b1fa2">
+<rect x="3" y="5" width="3" height="2"/><rect x="2" y="3" width="3" height="2"/><rect x="1" y="1" width="2" height="2"/>
+<rect x="10" y="5" width="3" height="2"/><rect x="11" y="3" width="3" height="2"/><rect x="13" y="1" width="2" height="2"/>
+</g>
+<g fill="#4a148c">
+<rect x="1" y="1" width="1" height="1"/><rect x="2" y="5" width="1" height="1"/>
+<rect x="14" y="1" width="1" height="1"/><rect x="13" y="5" width="1" height="1"/>
+</g>
+<!-- corpo -->
+<rect x="6" y="8" width="4" height="5" fill="#6a1b9a"/>
+<rect x="6" y="6" width="4" height="2" fill="#6a1b9a"/>
+<rect x="6" y="5" width="1" height="1" fill="#6a1b9a"/>
+<rect x="9" y="5" width="1" height="1" fill="#6a1b9a"/>
+<!-- olhos vermelhos -->
+<rect x="7" y="7" width="1" height="1" fill="#ff1744"/>
+<rect x="8" y="7" width="1" height="1" fill="#ff1744"/>
+</svg>
