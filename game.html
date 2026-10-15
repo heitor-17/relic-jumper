@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relic Jumper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Relic Jumper</h1>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="448"></canvas>
+    </div>
+
+    <div class="controls-bar">
+        <span>Controlos:</span> <b>A / D</b> ou <b>Setas</b> para mover | <b>W / Espaço</b> para saltar | <b>S</b> para agachar | <b>J / Z</b> para Atacar | <b>R</b> Reiniciar
+    </div>
+
+    <!-- O atributo type="module" permite utilizar import/export entre os scripts -->
+    <script type="module" src="scripts/game.js"></script>
+</body>
+</html>

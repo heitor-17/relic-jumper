@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relic Jumper - Validação Completa de 40 Assets</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b0e14;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            user-select: none;
+        }
+        h1 {
+            margin: 5px 0;
+            color: #f39c12;
+            text-shadow: 2px 2px #000;
+        }
+        #game-container {
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+            border: 4px solid #34495e;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            background: #1a252f;
+            image-rendering: pixelated;
+        }
+        .controls-bar {
+            margin-top: 12px;
+            background: #1f2c3a;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid #34495e;
+            text-align: center;
+        }
+        .controls-bar span {
+            color: #f1c40f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Relic Jumper: Edição Expandida</h1>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="448"></canvas>
+    </div>
+
+    <div class="controls-bar">
+        <span>Controlos:</span> <b>A / D</b> ou <b>Setas</b> para mover | <b>W / Espaço</b> para saltar | <b>S / Seta Baixo</b> para agachar | <b>J / Z</b> para Atacar com Chicote | <b>R</b> Reiniciar
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Mapeamento Integral dos 40 Assets
+        const assetMap = {
+            playerIdle: 'assets/asset-01.svg',
+            playerRun1: 'assets/asset-02.svg',
+            playerRun2: 'assets/asset-03.svg',
+            playerJump: 'assets/asset-04.svg',
+            playerFall: 'assets/asset-05.svg',
+            playerCrouch: 'assets/asset-06.svg',
+            playerAttack: 'assets/asset-07.svg',
+            playerHurt: 'assets/asset-08.svg',
+            playerVictory: 'assets/asset-09.svg',
+            playerDeath: 'assets/asset-10.svg',
+
+            tileGrass: 'assets/asset-11.svg',
+            tileDirt: 'assets/asset-12.svg',
+            tilePlatform: 'assets/asset-13.svg',
+            tileStone: 'assets/asset-14.svg',
+            spikes: 'assets/asset-15.svg',
+            torch: 'assets/asset-16.svg',
+            crate: 'assets/asset-17.svg',
+            sign: 'assets/asset-18.svg',
+            door: 'assets/asset-19.svg',
+            bgMountains: 'assets/asset-20.svg',
+
+            slimeIdle: 'assets/asset-21.svg',
+            slimeAttack: 'assets/asset-22.svg',
+            batOpen: 'assets/asset-23.svg',
+            batClosed: 'assets/asset-24.svg',
+            skeleton: 'assets/asset-25.svg',
+            coin1: 'assets/asset-26.svg',
+            coin2: 'assets/asset-27.svg',
+            key: 'assets/asset-28.svg',
+            potion: 'assets/asset-29.svg',
+            chest: 'assets/asset-30.svg',
+
+            heartFull: 'assets/asset-31.svg',
+            heartEmpty: 'assets/asset-32.svg',
+            uiCoin: 'assets/asset-33.svg',
+            btnPlay: 'assets/asset-34.svg',
+            btnPlayPress: 'assets/asset-35.svg',
+            uiPanel: 'assets/asset-36.svg',
+            btnClose: 'assets/asset-37.svg',
+            btnSettings: 'assets/asset-38.svg',
+            barFrame: 'assets/asset-39.svg',
+            barFill: 'assets/asset-40.svg'
+        };
+
+        const images = {};
+        let loadedAssets = 0;
+        const totalAssets = Object.keys(assetMap).length;
+
+        for (let key in assetMap) {
+            images[key] = new Image();
+            images[key].onload = () => { loadedAssets++; };
+            images[key].onerror = () => { loadedAssets++; }; // Continua mesmo se houver falha
+            images[key].src = assetMap[key];
+        }
+
+        // Sistema de Teclas
+        const KEYS = {};
+        window.addEventListener('keydown', e => KEYS[e.code] = true);
+        window.addEventListener('keyup', e => KEYS[e.code] = false);
+
+        const TILE_SIZE = 32;
+        const GRAVITY = 0.45;
+
+        // Câmara de Scroll
+        const camera = { x: 0, y: 0, width: canvas.width, height: canvas.height };
+
+        // Estados do Jogo: 'MENU', 'PLAYING', 'GAMEOVER', 'VICTORY'
+        let currentScreen = 'MENU';
+        let currentLevelIndex = 0;
+
+        let gameState = {
+            score: 0,
+            coins: 0,
+            lives: 3,
+            hasKey: false
+        };
+
+        // Entidade do Jogador
+        const player = {
+            x: 60,
+            y: 200,
+            width: 24,
+            height: 32,
+            vx: 0,
+            vy: 0,
+            speed: 3.8,
+            jumpForce: -9.8,
+            grounded: false,
+            isCrouching: false,
+            isAttacking: false,
+            attackTimer: 0,
+            invulnerableTimer: 0,
+            facing: 'right'
+        };
+
+        // Definição dos Níveis Expandidos (Mapas de Matriz de Caracteres)
+        // . = Ar | 1 = Relva | 2 = Terra | 3 = Plataforma | 4 = Parede Pedra | 5 = Espinhos
+        // T = Tocha | S = Sinal | D = Porta | K = Chave | C = Caixote | B = Baú | P = Poção
+        // e = Slime | b = Morcego | k = Esqueleto | o = Moeda
+        const LEVELS = [
+            {
+                name: "Nível 1: A Floresta das Ruínas",
+                map: [
+                    "................................................................",
+                    "................................................................",
+                    "................................................................",
+                    "....T..............T..............T..............T..............",
+                    "....S..............333............333............D..............",
+                    "....1111........................................444111..........",
+                    ".....................C.......C..................................",
+                    ".........o...o....11111....11111.......B...C....................",
+                    "........1111111.......................1111111.......K...........",
+                    "....................444.....e.....................111111........",
+                    "...................42224..1111111....555555.....................",
+                    "1111111111111111111222221122222221111111111111111111111111111111",
+                    "2222222222222222222222222222222222222222222222222222222222222222"
+                ]
+            },
+            {
+                name: "Nível 2: O Caverna dos Morcegos",
+                map: [
+                    "................................................................................",
+                    "................................................................................",
+                    "....T..............T..............T..............T..............T...............",
+                    "....1111...........333............333............333............1111............",
+                    "..........b..............b..............b.............................C.........",
+                    "...................o...o...................P..........................444........",
+                    "........C........111111111...............11111........C...B....................",
+                    "......11111.........................................1111111..........D..........",
+                    "..........................5555....e...............................111111........",
+                    ".............333.........111111.111111..........................................",
+                    "....e..C..........o..o....................5555........e......K..................",
+                    "11111111111111111111111111111111111111111111111111111111111111111111111111111111",
+                    "22222222222222222222222222222222222222222222222222222222222222222222222222222222"
+                ]
+            },
+            {
+                name: "Nível 3: As Catacumbas Profundas",
+                map: [
+                    "................................................................................................",
+                    "................................................................................................",
+                    "....T................T................T................T................T................T......",
+                    "....444...............333..............333..............444..............333..............D.....",
+                    ".......4...................................................4............................4444....",
+                    "........4.......b............b..............k...............4.......B...C.......................",
+                    ".........4...11111.........11111..........11111..............4....1111111........K...............",
+                    "..........4...................................................4................111111...........",
+                    "...........4..........e...........C...B........................4................................",
+                    "............4.......11111.......11111111........................4.......e.......................",
+                    ".....S.......4.............................5555...5555...........4...1111111...................",
+                    "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
+                    "222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
+                ]
+            }
+        ];
+
+        // Listas Ativas de Objetos por Nível
+        let activeTiles = [];
+        let activeEnemies = [];
+        let activeItems = [];
+        let activeDecorations = [];
+
+        function loadLevel(index) {
+            currentLevelIndex = index;
+            const levelData = LEVELS[index].map;
+            activeTiles = [];
+            activeEnemies = [];
+            activeItems = [];
+            activeDecorations = [];
+            gameState.hasKey = false;
+
+            player.x = 50;
+            player.y = 100;
+            player.vx = 0;
+            player.vy = 0;
+
+            for (let r = 0; r < levelData.length; r++) {
+                for (let c = 0; c < levelData[r].length; c++) {
+                    const char = levelData[r][c];
+                    const x = c * TILE_SIZE;
+                    const y = r * TILE_SIZE;
+
+                    if (char === '1') activeTiles.push({ x, y, type: 'grass', solid: true });
+                    else if (char === '2') activeTiles.push({ x, y, type: 'dirt', solid: true });
+                    else if (char === '3') activeTiles.push({ x, y, type: 'platform', solid: true });
+                    else if (char === '4') activeTiles.push({ x, y, type: 'stone', solid: true });
+                    else if (char === '5') activeTiles.push({ x, y, type: 'spikes', solid: false });
+                    else if (char === 'T') activeDecorations.push({ x, y, type: 'torch' });
+                    else if (char === 'S') activeDecorations.push({ x, y, type: 'sign' });
+                    else if (char === 'D') activeTiles.push({ x, y: y - TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE * 2, type: 'door', solid: false });
+                    else if (char === 'K') activeItems.push({ x, y, type: 'key', w: 20, h: 20 });
+                    else if (char === 'o') activeItems.push({ x, y, type: 'coin', w: 18, h: 18 });
+                    else if (char === 'P') activeItems.push({ x, y, type: 'potion', w: 20, h: 20 });
+                    else if (char === 'C') activeItems.push({ x, y, type: 'crate', w: 28, h: 28, hp: 1 });
+                    else if (char === 'B') activeItems.push({ x, y, type: 'chest', w: 30, h: 26, hp: 1 });
+                    else if (char === 'e') activeEnemies.push({ x, y, w: 26, h: 24, type: 'slime', vx: 1.2, minX: x - 60, maxX: x + 60, hp: 1 });
+                    else if (char === 'b') activeEnemies.push({ x, y, w: 26, h: 24, type: 'bat', vx: 1.8, startY: y, angle: 0, hp: 1 });
+                    else if (char === 'k') activeEnemies.push({ x, y, w: 26, h: 32, type: 'skeleton', vx: 1.0, minX: x - 80, maxX: x + 80, hp: 2 });
+                }
+            }
+        }
+
+        function restartAll() {
+            gameState.score = 0;
+            gameState.coins = 0;
+            gameState.lives = 3;
+            loadLevel(0);
+            currentScreen = 'PLAYING';
+        }
+
+        // Lógica de Atualização
+        function update() {
+            if (currentScreen !== 'PLAYING') return;
+
+            // Invulnerabilidade temporária após dano
+            if (player.invulnerableTimer > 0) player.invulnerableTimer--;
+
+            // Temporizador de Ataque
+            if (player.attackTimer > 0) {
+                player.attackTimer--;
+                if (player.attackTimer === 0) player.isAttacking = false;
+            }
+
+            // Ação de Ataque (Tecla J ou Z)
+            if ((KEYS['KeyJ'] || KEYS['KeyZ']) && !player.isAttacking) {
+                player.isAttacking = true;
+                player.attackTimer = 18; // Duração da animação
+                processAttack();
+            }
+
+            // Agachar
+            player.isCrouching = (KEYS['KeyS'] || KEYS['ArrowDown']) && player.grounded;
+
+            // Movimento Horizontal
+            player.vx = 0;
+            if (!player.isCrouching) {
+                if (KEYS['KeyA'] || KEYS['ArrowLeft']) {
+                    player.vx = -player.speed;
+                    player.facing = 'left';
+                }
+                if (KEYS['KeyD'] || KEYS['ArrowRight']) {
+                    player.vx = player.speed;
+                    player.facing = 'right';
+                }
+            }
+
+            // Salto
+            if ((KEYS['KeyW'] || KEYS['ArrowUp'] || KEYS['Space']) && player.grounded && !player.isCrouching) {
+                player.vy = player.jumpForce;
+                player.grounded = false;
+            }
+
+            // Gravidade
+            player.vy += GRAVITY;
+
+            // Física & Colisão Horizontal
+            player.x += player.vx;
+            checkHorizontalCollisions();
+
+            // Física & Colisão Vertical
+            player.y += player.vy;
+            player.grounded = false;
+            checkVerticalCollisions();
+
+            // Atualizar Inimigos
+            activeEnemies.forEach((e, idx) => {
+                if (e.type === 'slime' || e.type === 'skeleton') {
+                    e.x += e.vx;
+                    if (e.x < e.minX || e.x > e.maxX) e.vx *= -1;
+                } else if (e.type === 'bat') {
+                    e.x += e.vx;
+                    if (e.x < player.x - 200 || e.x > player.x + 400) e.vx *= -1;
+                    e.angle += 0.08;
+                    e.y = e.startY + Math.sin(e.angle) * 20;
+                }
+
+                // Dano no Jogador
+                if (checkAABB(player, e)) {
+                    takeDamage();
+                }
+            });
+
+            // Atualizar Colecionáveis
+            activeItems.forEach(item => {
+                if (item.collected) return;
+
+                if (checkAABB(player, { x: item.x, y: item.y, width: item.w, height: item.h })) {
+                    if (item.type === 'coin') {
+                        item.collected = true;
+                        gameState.coins++;
+                        gameState.score += 50;
+                    } else if (item.type === 'key') {
+                        item.collected = true;
+                        gameState.hasKey = true;
+                        gameState.score += 200;
+                    } else if (item.type === 'potion') {
+                        item.collected = true;
+                        if (gameState.lives < 3) gameState.lives++;
+                        gameState.score += 100;
+                    }
+                }
+            });
+
+            // Atualizar Câmara para seguir o Jogador
+            camera.x = player.x - canvas.width / 2 + player.width / 2;
+            camera.y = player.y - canvas.height / 2 + player.height / 2;
+            camera.x = Math.max(0, Math.min(camera.x, (LEVELS[currentLevelIndex].map[0].length * TILE_SIZE) - canvas.width));
+            camera.y = Math.max(0, Math.min(camera.y, (LEVELS[currentLevelIndex].map.length * TILE_SIZE) - canvas.height));
+
+            // Queda para fora do mapa
+            if (player.y > (LEVELS[currentLevelIndex].map.length * TILE_SIZE) + 50) {
+                takeDamage(true);
+            }
+        }
+
+        function processAttack() {
+            // Caixa de colisão do chicote
+            const whipRange = 36;
+            const attackBox = {
+                x: player.facing === 'right' ? player.x + player.width : player.x - whipRange,
+                y: player.y,
+                width: whipRange,
+                height: player.height
+            };
+
+            // Destruir Inimigos
+            activeEnemies.forEach((e, index) => {
+                if (checkAABB(attackBox, { x: e.x, y: e.y, width: e.w, height: e.h })) {
+                    e.hp--;
+                    if (e.hp <= 0) {
+                        activeEnemies.splice(index, 1);
+                        gameState.score += 150;
+                        // Oportunidade de largar moeda
+                        activeItems.push({ x: e.x, y: e.y, type: 'coin', w: 18, h: 18 });
+                    }
+                }
+            });
+
+            // Destruir Caixotes e Abrir Baús
+            activeItems.forEach(item => {
+                if (item.collected) return;
+                if (item.type === 'crate' || item.type === 'chest') {
+                    if (checkAABB(attackBox, { x: item.x, y: item.y, width: item.w, height: item.h })) {
+                        item.collected = true;
+                        gameState.score += 100;
+                        if (item.type === 'chest') {
+                            gameState.coins += 5;
+                            activeItems.push({ x: item.x + 10, y: item.y - 10, type: 'potion', w: 20, h: 20 });
+                        } else {
+                            activeItems.push({ x: item.x, y: item.y, type: 'coin', w: 18, h: 18 });
+                        }
+                    }
+                }
+            });
+        }
+
+        function takeDamage(instantKill = false) {
+            if (player.invulnerableTimer > 0 && !instantKill) return;
+
+            gameState.lives = instantKill ? 0 : gameState.lives - 1;
+            player.invulnerableTimer = 60; // 1 segundo de invulnerabilidade
+
+            if (gameState.lives <= 0) {
+                currentScreen = 'GAMEOVER';
+            } else {
+                player.x = 50;
+                player.y = 100;
+                player.vx = 0;
+                player.vy = 0;
+            }
+        }
+
+        function checkAABB(a, b) {
+            return a.x < b.x + (b.width || b.w) &&
+                   a.x + (a.width || a.w) > b.x &&
+                   a.y < b.y + (b.height || b.h) &&
+                   a.y + (a.height || a.h) > b.y;
+        }
+
+        function checkHorizontalCollisions() {
+            activeTiles.forEach(tile => {
+                if (!tile.solid) return;
+                const box = { x: tile.x, y: tile.y, width: TILE_SIZE, height: TILE_SIZE };
+                if (checkAABB(player, box)) {
+                    if (player.vx > 0) player.x = box.x - player.width;
+                    if (player.vx < 0) player.x = box.x + box.width;
+                }
+            });
+        }
+
+        function checkVerticalCollisions() {
+            activeTiles.forEach(tile => {
+                const box = { x: tile.x, y: tile.y, width: tile.width || TILE_SIZE, height: tile.height || TILE_SIZE };
+
+                if (tile.solid && checkAABB(player, box)) {
+                    if (player.vy > 0) {
+                        player.y = box.y - player.height;
+                        player.vy = 0;
+                        player.grounded = true;
+                    } else if (player.vy < 0) {
+                        player.y = box.y + box.height;
+                        player.vy = 0;
+                    }
+                } else if (tile.type === 'spikes' && checkAABB(player, { x: box.x + 4, y: box.y + 12, width: TILE_SIZE - 8, height: TILE_SIZE - 12 })) {
+                    takeDamage();
+                } else if (tile.type === 'door' && checkAABB(player, box)) {
+                    if (gameState.hasKey) {
+                        if (currentLevelIndex < LEVELS.length - 1) {
+                            loadLevel(currentLevelIndex + 1);
+                        } else {
+                            currentScreen = 'VICTORY';
+                        }
+                    }
+                }
+            });
+        }
+
+        // Renderização
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (currentScreen === 'MENU') {
+                drawMenu();
+                return;
+            }
+
+            // 1. Fundo Dinâmico Parallax (asset-20)
+            if (images.bgMountains.complete) {
+                const bgX = -(camera.x * 0.2) % canvas.width;
+                ctx.drawImage(images.bgMountains, bgX, 0, canvas.width, canvas.height);
+                ctx.drawImage(images.bgMountains, bgX + canvas.width, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = '#1a252f';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            ctx.save();
+            ctx.translate(-Math.floor(camera.x), -Math.floor(camera.y));
+
+            // 2. Desenhar Decorações (Tochas asset-16 e Placas asset-18)
+            activeDecorations.forEach(dec => {
+                const sprite = dec.type === 'torch' ? images.torch : images.sign;
+                drawAsset(sprite, dec.x, dec.y, TILE_SIZE, TILE_SIZE);
+            });
+
+            // 3. Desenhar Tiles do Cenário (asset-11, 12, 13, 14, 15, 19)
+            activeTiles.forEach(tile => {
+                let img = images.tileGrass;
+                if (tile.type === 'dirt') img = images.tileDirt;
+                else if (tile.type === 'platform') img = images.tilePlatform;
+                else if (tile.type === 'stone') img = images.tileStone;
+                else if (tile.type === 'spikes') img = images.spikes;
+                else if (tile.type === 'door') img = images.door;
+
+                drawAsset(img, tile.x, tile.y, tile.width || TILE_SIZE, tile.height || TILE_SIZE);
+            });
+
+            // 4. Desenhar Itens e Colecionáveis (asset-17, 26/27, 28, 29, 30)
+            const coinSprite = (Math.floor(Date.now() / 200) % 2 === 0) ? images.coin1 : images.coin2;
+            activeItems.forEach(item => {
+                if (item.collected) return;
+                let img = coinSprite;
+                if (item.type === 'key') img = images.key;
+                else if (item.type === 'potion') img = images.potion;
+                else if (item.type === 'crate') img = images.crate;
+                else if (item.type === 'chest') img = images.chest;
+
+                drawAsset(img, item.x, item.y, item.w, item.h);
+            });
+
+            // 5. Desenhar Inimigos (asset-21/22, 23/24, 25)
+            activeEnemies.forEach(e => {
+                let img = images.slimeIdle;
+                if (e.type === 'slime') {
+                    img = (Math.abs(player.x - e.x) < 60) ? images.slimeAttack : images.slimeIdle;
+                } else if (e.type === 'bat') {
+                    img = (Math.floor(Date.now() / 150) % 2 === 0) ? images.batOpen : images.batClosed;
+                } else if (e.type === 'skeleton') {
+                    img = images.skeleton;
+                }
+                drawAsset(img, e.x, e.y, e.w, e.h);
+            });
+
+            // 6. Desenhar Jogador (asset-01 a 08, piscando se invulnerável)
+            if (player.invulnerableTimer % 4 < 2) {
+                let pSprite = images.playerIdle;
+                if (player.isAttacking) pSprite = images.playerAttack;
+                else if (player.isCrouching) pSprite = images.playerCrouch;
+                else if (!player.grounded) pSprite = player.vy < 0 ? images.playerJump : images.playerFall;
+                else if (Math.abs(player.vx) > 0) pSprite = (Math.floor(Date.now() / 120) % 2 === 0) ? images.playerRun1 : images.playerRun2;
+
+                ctx.save();
+                if (player.facing === 'left') {
+                    ctx.translate(player.x + player.width, player.y);
+                    ctx.scale(-1, 1);
+                    drawAsset(pSprite, 0, 0, player.width, player.height);
+                } else {
+                    drawAsset(pSprite, player.x, player.y, player.width, player.height);
+                }
+                ctx.restore();
+            }
+
+            ctx.restore();
+
+            // 7. Interface de Utilizador HUD (asset-31, 32, 33, 28)
+            drawHUD();
+
+            if (currentScreen === 'GAMEOVER') {
+                drawOverlayScreen('GAME OVER', 'Pressiona R para Reiniciar', images.playerDeath, '#e74c3c');
+            } else if (currentScreen === 'VICTORY') {
+                drawOverlayScreen('VITÓRIA TOTAL!', 'Todos os níveis foram superados com sucesso!', images.playerVictory, '#2ecc71');
+            }
+        }
+
+        function drawHUD() {
+            // Painel UI do Topo
+            ctx.fillStyle = 'rgba(20, 25, 35, 0.75)';
+            ctx.fillRect(10, 10, 260, 45);
+            ctx.strokeStyle = '#34495e';
+            ctx.strokeRect(10, 10, 260, 45);
+
+            // Vidas (Corações)
+            for (let i = 0; i < 3; i++) {
+                const heart = (i < gameState.lives) ? images.heartFull : images.heartEmpty;
+                drawAsset(heart, 20 + (i * 26), 20, 22, 22);
+            }
+
+            // Moedas
+            drawAsset(images.uiCoin, 110, 20, 22, 22);
+            ctx.fillStyle = '#f1c40f';
+            ctx.font = 'bold 16px monospace';
+            ctx.fillText(`x${gameState.coins}`, 138, 36);
+
+            // Chave Mestra
+            if (gameState.hasKey) {
+                drawAsset(images.key, 190, 20, 22, 22);
+            }
+
+            // Nome do Nível
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '13px sans-serif';
+            ctx.fillText(LEVELS[currentLevelIndex].name, 600, 28);
+            ctx.fillText(`Pontos: ${gameState.score}`, 600, 46);
+        }
+
+        function drawMenu() {
+            // Fundo de Painel UI (asset-36)
+            drawAsset(images.uiPanel, 200, 60, 400, 320);
+
+            ctx.fillStyle = '#f39c12';
+            ctx.font = 'bold 28px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('RELIC JUMPER', canvas.width / 2, 120);
+
+            ctx.fillStyle = '#bdc3c7';
+            ctx.font = '14px sans-serif';
+            ctx.fillText('Validação de Engine & Assets SVG', canvas.width / 2, 145);
+
+            // Barra de Carregamento (asset-39 e asset-40)
+            const progress = loadedAssets / totalAssets;
+            drawAsset(images.barFrame, 280, 180, 240, 24);
+            if (progress > 0) {
+                drawAsset(images.barFill, 284, 184, (232 * progress), 16);
+            }
+
+            // Botão Iniciar (asset-34 / asset-35)
+            const btnImg = (progress >= 1) ? images.btnPlay : images.btnPlayPress;
+            drawAsset(btnImg, 320, 230, 160, 48);
+
+            // Ícone de Definições e Fechar (asset-37, asset-38)
+            drawAsset(images.btnSettings, 220, 80, 28, 28);
+            drawAsset(images.btnClose, 550, 80, 28, 28);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '13px sans-serif';
+            ctx.fillText(progress >= 1 ? 'Clica para Iniciar o Jogo' : 'A carregar ficheiros SVG...', canvas.width / 2, 310);
+            ctx.textAlign = 'start';
+        }
+
+        function drawOverlayScreen(title, subtitle, sprite, color) {
+            ctx.fillStyle = 'rgba(10, 15, 25, 0.85)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawAsset(images.uiPanel, 220, 80, 360, 280);
+            drawAsset(sprite, canvas.width / 2 - 20, 120, 40, 50);
+
+            ctx.fillStyle = color;
+            ctx.font = 'bold 28px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(title, canvas.width / 2, 210);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '15px sans-serif';
+            ctx.fillText(subtitle, canvas.width / 2, 250);
+
+            ctx.font = '13px sans-serif';
+            ctx.fillStyle = '#bdc3c7';
+            ctx.fillText(`Pontuação Final: ${gameState.score} | Moedas: ${gameState.coins}`, canvas.width / 2, 280);
+            ctx.textAlign = 'start';
+        }
+
+        function drawAsset(img, x, y, w, h) {
+            if (img && img.complete && img.naturalWidth !== 0) {
+                ctx.drawImage(img, x, y, w, h);
+            } else {
+                ctx.fillStyle = '#95a5a6';
+                ctx.fillRect(x, y, w, h);
+            }
+        }
+
+        // Clique para iniciar no Menu
+        canvas.addEventListener('click', (e) => {
+            if (currentScreen === 'MENU' && loadedAssets >= totalAssets) {
+                restartAll();
+            }
+        });
+
+        // Loop do Jogo
+        function gameLoop() {
+            if (KEYS['KeyR'] && (currentScreen === 'GAMEOVER' || currentScreen === 'VICTORY')) {
+                restartAll();
+            }
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
